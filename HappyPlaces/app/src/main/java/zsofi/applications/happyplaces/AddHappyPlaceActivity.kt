@@ -8,9 +8,13 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.Settings
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
@@ -18,12 +22,30 @@ import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.single.PermissionListener
 import zsofi.applications.happyplaces.databinding.ActivityAddHappyPlaceBinding
+import java.io.IOException
 import java.util.*
 
 class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
 
     private var binding: ActivityAddHappyPlaceBinding? = null
     private var savedDate : IntArray = intArrayOf(0, 0, 0)
+
+    val openGalleryLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+                result ->
+            if(result.resultCode == RESULT_OK && result.data!=null){
+                try {
+                    binding?.ivImageUpload?.setPadding(5,5,5,5)
+                    binding?.ivImageUpload?.setImageURI(result.data?.data)
+                    // TODO to check why did the border from the image disappear
+                }catch (e: IOException){
+                    e.printStackTrace()
+                    Toast.makeText(this@AddHappyPlaceActivity,
+                        "Failed to load image from gallery!", Toast.LENGTH_SHORT).show()
+                }
+
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,9 +97,10 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             Manifest.permission.READ_EXTERNAL_STORAGE
         ).withListener(object: PermissionListener{
             override fun onPermissionGranted(response: PermissionGrantedResponse) {
-                Toast.makeText(this@AddHappyPlaceActivity,
-                    "Storage read and write permissions are granted. " +
-                            "Now you can select an image from Gallery", Toast.LENGTH_SHORT).show()
+                val pickIntent = Intent(Intent.ACTION_PICK,
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                openGalleryLauncher.launch(pickIntent)
+
             }
             override fun onPermissionDenied(response: PermissionDeniedResponse) {
                 Toast.makeText(this@AddHappyPlaceActivity,
