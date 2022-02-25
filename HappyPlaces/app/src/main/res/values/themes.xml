@@ -23,4 +23,27 @@
         <item name="android:colorControlNormal">@color/white</item>
     </style>
 
+    <style name="myDialogTheme" parent="ThemeOverlay.AppCompat.Dialog">
+        <item name="colorAccent">@color/colorPrimaryVariant</item>                      <!--header background-->
+        <item name="android:windowBackground">@color/white</item>                       <!--calendar background-->
+        <item name="android:colorControlActivated">@color/pink5</item>                  <!--selected day-->
+        <item name="android:textColorPrimary">#929292</item>                            <!--days of the month-->
+        <item name="android:textColorSecondary">@color/colorPrimaryVariant</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/AppTheme.Alert.Button.Positive</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/AppTheme.Alert.Button.Negative</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/AppTheme.Alert.Button.Neutral</item>
+    </style>
+
+    <style name="AppTheme.Alert.Button.Positive" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/pink5</item>
+    </style>
+
+    <style name="AppTheme.Alert.Button.Negative" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/pink5</item>
+    </style>
+
+    <style name="AppTheme.Alert.Button.Neutral" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/pink5</item>
+    </style>
+
 </resources>
