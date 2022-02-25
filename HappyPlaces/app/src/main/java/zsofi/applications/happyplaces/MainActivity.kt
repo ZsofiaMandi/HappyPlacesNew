@@ -20,4 +20,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (binding != null) {
+            binding = null
+        }
+    }
 }
