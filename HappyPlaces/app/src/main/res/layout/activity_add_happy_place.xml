@@ -119,7 +119,7 @@
                     android:layout_margin="12dp"
                     android:padding="50dp"
                     android:scaleType="centerCrop"
-                    android:foreground="@drawable/shape_image_view_border"
+                    android:background="@drawable/shape_image_view_border"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     android:src="@drawable/ic_image_icon"
@@ -135,7 +135,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/ivImageUpload"
                     app:layout_constraintBottom_toBottomOf="@id/ivImageUpload"
-                    android:foreground="?attr/selectableItemBackground"
+                    android:background="?attr/selectableItemBackground"
                     android:textSize="18sp"
                     />
             </androidx.constraintlayout.widget.ConstraintLayout>

@@ -36,7 +36,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                 result ->
             if(result.resultCode == RESULT_OK && result.data!=null){
                 try {
-                    binding?.ivImageUpload?.setPadding(5,5,5,5)
+                    binding?.ivImageUpload?.setPadding(0,0,0,0)
                     binding?.ivImageUpload?.setImageURI(result.data?.data)
                     // TODO to check why did the border from the image disappear
                 }catch (e: IOException){
@@ -53,7 +53,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                 result ->
             if (result.resultCode == RESULT_OK && result.data!=null){
                 val thumbNail : Bitmap = result.data?.extras!!.get("data") as Bitmap
-                binding?.ivImageUpload?.setPadding(5,5,5,5)
+                binding?.ivImageUpload?.setPadding(0,0,0,0)
                 binding?.ivImageUpload?.setImageBitmap(thumbNail)
             }
         }
