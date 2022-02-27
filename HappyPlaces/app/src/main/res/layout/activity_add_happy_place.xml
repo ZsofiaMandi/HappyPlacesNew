@@ -119,7 +119,7 @@
                     android:layout_margin="12dp"
                     android:padding="50dp"
                     android:scaleType="centerCrop"
-                    android:background="@drawable/shape_image_view_border"
+                    android:foreground="@drawable/shape_image_view_border"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     android:src="@drawable/ic_image_icon"

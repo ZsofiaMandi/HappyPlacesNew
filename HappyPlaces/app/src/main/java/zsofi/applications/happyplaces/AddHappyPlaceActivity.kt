@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -47,6 +48,16 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             }
         }
 
+    private val cameraLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+                result ->
+            if (result.resultCode == RESULT_OK && result.data!=null){
+                val thumbNail : Bitmap = result.data?.extras!!.get("data") as Bitmap
+                binding?.ivImageUpload?.setPadding(5,5,5,5)
+                binding?.ivImageUpload?.setImageBitmap(thumbNail)
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -67,6 +78,41 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
         binding?.etDate?.setOnClickListener(this)
         binding?.tvAddImage?.setOnClickListener(this)
 
+    }
+
+    override fun onClick(v: View?){
+        when(v!!.id){
+            R.id.etDate ->{
+                val myCalendar = Calendar.getInstance()
+                var year = myCalendar.get(Calendar.YEAR)
+                var month = myCalendar.get(Calendar.MONTH)
+                var day = myCalendar.get(Calendar.DAY_OF_MONTH)
+
+                if(savedDate[0] != 0)
+                {
+                    year = savedDate[0]
+                    month = savedDate[1]
+                    day = savedDate[2]
+                }
+
+                clickDatePicker(year, month, day)
+            }
+            R.id.tvAddImage ->{
+                val pictureDialog = AlertDialog.Builder(this)
+                pictureDialog.setTitle("Select Action")
+
+                val pictureDialogItems = arrayOf("Select photo from Gallery",
+                    "Capture photo from camera")
+                pictureDialog.setItems(pictureDialogItems){
+                        _, which->
+                    when(which){
+                        0 -> choosePhotoFromGallery()
+                        1 -> takePhotoFromCamera()
+                    }
+                }
+                pictureDialog.show()
+            }
+        }
     }
 
     private fun clickDatePicker(year: Int, month: Int, day: Int) {
@@ -113,6 +159,25 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
         }).check()
     }
 
+    private fun takePhotoFromCamera(){
+        Dexter.withContext(this).withPermission(
+            Manifest.permission.CAMERA
+        ).withListener(object: PermissionListener{
+            override fun onPermissionGranted(response: PermissionGrantedResponse) {
+                val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                cameraLauncher.launch(cameraIntent)
+
+            }
+            override fun onPermissionDenied(response: PermissionDeniedResponse) {
+                Toast.makeText(this@AddHappyPlaceActivity,
+                    "Camera permission is denied, you cannot take photo.", Toast.LENGTH_SHORT).show()
+            }
+            override fun onPermissionRationaleShouldBeShown(permission: PermissionRequest, token: PermissionToken) {
+                showRationalDialogForPermissions()
+            }
+        }).check()
+    }
+
     private fun showRationalDialogForPermissions(){
         AlertDialog.Builder(this, R.style.myDialogTheme).setMessage("It looks like you have turned off permission" +
                 " required for this feature. It can be enabled under the Applications Settings")
@@ -130,42 +195,6 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             }.setNegativeButton("Cancel"){dialog, _ ->
                 dialog.dismiss()
             }.show()
-    }
-
-    override fun onClick(v: View?){
-        when(v!!.id){
-            R.id.etDate ->{
-                val myCalendar = Calendar.getInstance()
-                var year = myCalendar.get(Calendar.YEAR)
-                var month = myCalendar.get(Calendar.MONTH)
-                var day = myCalendar.get(Calendar.DAY_OF_MONTH)
-
-                if(savedDate[0] != 0)
-                {
-                    year = savedDate[0]
-                    month = savedDate[1]
-                    day = savedDate[2]
-                }
-
-                clickDatePicker(year, month, day)
-            }
-            R.id.tvAddImage ->{
-                val pictureDialog = AlertDialog.Builder(this)
-                pictureDialog.setTitle("Select Action")
-
-                val pictureDialogItems = arrayOf("Select photo from Gallery",
-                    "Capture photo from camera")
-                pictureDialog.setItems(pictureDialogItems){
-                        _, which->
-                    when(which){
-                        0 -> choosePhotoFromGallery()
-                        1 -> Toast.makeText(this@AddHappyPlaceActivity,
-                            "Camera selection coming soon...",Toast.LENGTH_SHORT).show()
-                    }
-                }
-                pictureDialog.show()
-            }
-        }
     }
 
     override fun onDestroy() {
