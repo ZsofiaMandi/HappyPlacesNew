@@ -13,13 +13,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HappyPlaces">
         <activity
-            android:name=".AddHappyPlaceActivity"
+            android:name=".activites.AddHappyPlaceActivity"
             android:screenOrientation="portrait"
             android:label="ADD HAPPY PLACE"
             android:theme="@style/CustomNoActionBarTheme"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name=".activites.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

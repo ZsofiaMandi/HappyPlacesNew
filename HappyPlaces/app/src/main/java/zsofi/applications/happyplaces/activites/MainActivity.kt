@@ -1,4 +1,4 @@
-package zsofi.applications.happyplaces
+package zsofi.applications.happyplaces.activites
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity

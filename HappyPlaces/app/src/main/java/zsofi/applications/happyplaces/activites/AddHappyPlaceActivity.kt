@@ -1,4 +1,4 @@
-package zsofi.applications.happyplaces
+package zsofi.applications.happyplaces.activites
 
 import android.Manifest
 import android.app.AlertDialog
@@ -15,7 +15,6 @@ import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.view.View
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,6 +29,7 @@ import com.karumi.dexter.listener.single.PermissionListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import zsofi.applications.happyplaces.R
 import zsofi.applications.happyplaces.databinding.ActivityAddHappyPlaceBinding
 import java.io.File
 import java.io.FileOutputStream
@@ -41,6 +41,10 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
 
     private var binding: ActivityAddHappyPlaceBinding? = null
     private var savedDate : IntArray = intArrayOf(0, 0, 0)
+    private var saveImageToInternalStorage : Uri? = null
+    private var mLatitude : Double = 0.0
+    private var mLongitude : Double = 0.0
+
 
     val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -52,7 +56,8 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                     lifecycleScope.launch {
                         val drawable = binding?.ivImageUpload?.drawable
                         val bitmap = drawable!!.toBitmap()
-                        val saveImageToInternalStorage = saveImageToInternalStorage(bitmap)
+
+                        saveImageToInternalStorage = saveImageToInternalStorage(bitmap)
                         Log.e("Saved image: ", "Path :: $saveImageToInternalStorage")
                     }
 
@@ -74,7 +79,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                 binding?.ivImageUpload?.setPadding(0,0,0,0)
                 binding?.ivImageUpload?.setImageBitmap(thumbNail)
                 lifecycleScope.launch {
-                    val saveImageToInternalStorage = saveImageToInternalStorage(thumbNail)
+                    saveImageToInternalStorage = saveImageToInternalStorage(thumbNail)
                     Log.e("Saved image: ", "Path :: $saveImageToInternalStorage")
                 }
             }
@@ -99,6 +104,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
 
         binding?.etDate?.setOnClickListener(this)
         binding?.tvAddImage?.setOnClickListener(this)
+        binding?.btnSave?.setOnClickListener(this)
 
     }
 
@@ -133,6 +139,10 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                     }
                 }
                 pictureDialog.show()
+            }
+            R.id.btnSave ->{
+                // TODO
+                // Store Datamodel to Database
             }
         }
     }
