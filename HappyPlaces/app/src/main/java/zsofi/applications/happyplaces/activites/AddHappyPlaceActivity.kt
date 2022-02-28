@@ -30,7 +30,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import zsofi.applications.happyplaces.R
+import zsofi.applications.happyplaces.database.DatabaseHandler
 import zsofi.applications.happyplaces.databinding.ActivityAddHappyPlaceBinding
+import zsofi.applications.happyplaces.models.HappyPlaceModel
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -102,6 +104,8 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             onBackPressed()
         }
 
+        setDefaultDate()
+
         binding?.etDate?.setOnClickListener(this)
         binding?.tvAddImage?.setOnClickListener(this)
         binding?.btnSave?.setOnClickListener(this)
@@ -141,8 +145,45 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                 pictureDialog.show()
             }
             R.id.btnSave ->{
-                // TODO
-                // Store Datamodel to Database
+                // Store Data Model to Database
+
+                when{
+                    binding?.etTitle?.text.isNullOrEmpty() -> {
+                        Toast.makeText(this, "Please enter title",Toast.LENGTH_SHORT).show()
+                    }
+                    binding?.etDescription?.text.isNullOrEmpty() -> {
+                        Toast.makeText(this, "Please enter  a description",Toast.LENGTH_SHORT).show()
+                    }
+                    binding?.etLocation?.text.isNullOrEmpty() -> {
+                        Toast.makeText(this, "Please enter a location",Toast.LENGTH_SHORT).show()
+                    }
+                    saveImageToInternalStorage == null -> {
+                        Toast.makeText(this, "Please select an image",Toast.LENGTH_SHORT).show()
+                    }else ->{
+                        val happyPlaceModel = HappyPlaceModel(
+                            0,
+                            binding?.etTitle?.text.toString(),
+                            saveImageToInternalStorage.toString(),
+                            binding?.etDescription?.text.toString(),
+                            binding?.etDate?.text.toString(),
+                            binding?.etLocation?.text.toString(),
+                            mLatitude,
+                            mLongitude
+                            )
+                        val dbHandler = DatabaseHandler(this)
+                        val addHappyPlace = dbHandler.addHappyPlace(happyPlaceModel)
+
+                        if(addHappyPlace > 0){
+                            Toast.makeText(this,
+                                "The happy place details are inserted successfully",
+                                Toast.LENGTH_LONG).show()
+                            Log.e("DB", "DB updated successfully")
+                            finish()
+                        }
+                    }
+
+                }
+
             }
         }
     }
@@ -168,6 +209,15 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             day
         )
         dpd.show()
+    }
+
+    private fun setDefaultDate(){
+        val myCalendar = Calendar.getInstance()
+        var year = myCalendar.get(Calendar.YEAR)
+        var month = myCalendar.get(Calendar.MONTH)
+        var day = myCalendar.get(Calendar.DAY_OF_MONTH)
+        val defaultDate = "$day/${month + 1}/$year"
+        binding?.etDate?.setText(defaultDate)
     }
 
     private fun choosePhotoFromGallery(){
@@ -252,6 +302,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
     companion object {
         private const val IMAGE_DIRECTORY = "HappyPlacesImages"
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
