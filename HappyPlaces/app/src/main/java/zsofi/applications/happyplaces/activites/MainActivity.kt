@@ -11,13 +11,12 @@ import zsofi.applications.happyplaces.adapters.HappyPlacesAdapter
 import zsofi.applications.happyplaces.database.DatabaseHandler
 import zsofi.applications.happyplaces.databinding.ActivityMainBinding
 import zsofi.applications.happyplaces.models.HappyPlaceModel
-import androidx.activity.result.ActivityResultCallback
 
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.recyclerview.widget.ItemTouchHelper
 
-import androidx.activity.result.ActivityResultLauncher
-
-
+import androidx.recyclerview.widget.RecyclerView
+import zsofi.applications.happyplaces.utils.SwipeToEditCallback
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,11 +26,18 @@ class MainActivity : AppCompatActivity() {
     var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
     { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            // There are no request codes
-            val data: Intent? = result.data
             getHappyPlacesListFromLocalDB()
         }else{
            Log.e("Activity", "Cancelled or Back pressed")
+        }
+    }
+
+    var resultLauncherRV = registerForActivityResult(ActivityResultContracts.StartActivityForResult())
+    { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            getHappyPlacesListFromLocalDB()
+        }else{
+            Log.e("Activity", "Cancelled or Back pressed")
         }
     }
 
@@ -62,9 +68,19 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        val editSwipeHandler = object : SwipeToEditCallback(this){
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val adapter = binding?.rvHappyPlacesList?.adapter as HappyPlacesAdapter
+                adapter.notifyEditItem(this@MainActivity, viewHolder.adapterPosition, resultLauncherRV)
+
+            }
+        }
+
+        val editItemTouchHelper = ItemTouchHelper(editSwipeHandler)
+        editItemTouchHelper.attachToRecyclerView(binding?.rvHappyPlacesList)
     }
 
-    private  fun getHappyPlacesListFromLocalDB(){
+    private fun getHappyPlacesListFromLocalDB(){
         val dbHandler = DatabaseHandler(this)
         val getHappyPlaceList : ArrayList<HappyPlaceModel> =dbHandler.getHappyPlacesList()
 
@@ -83,6 +99,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, AddHappyPlaceActivity::class.java)
         resultLauncher.launch(intent)
     }
+
 
     companion object{
         var EXTRA_PLACE_DETAILS = "extra_place_details"

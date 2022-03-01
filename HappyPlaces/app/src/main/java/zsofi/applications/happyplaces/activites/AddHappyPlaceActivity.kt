@@ -48,6 +48,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
     private var mLatitude : Double = 0.0
     private var mLongitude : Double = 0.0
 
+    private var mHappyPlaceDetails : HappyPlaceModel? = null
 
     val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -105,12 +106,32 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             onBackPressed()
         }
 
+        // Get extra details if it's editing
+        if(intent.hasExtra(MainActivity.EXTRA_PLACE_DETAILS)){
+            mHappyPlaceDetails = intent.getParcelableExtra(MainActivity.EXTRA_PLACE_DETAILS) as HappyPlaceModel?
+        }
+
         setDefaultDate()
+
+        // We are editing is this is not null
+        if(mHappyPlaceDetails != null){
+            supportActionBar?.title = "Edit Happy Place"
+
+            binding?.ivImageUpload?.setPadding(0,0,0,0)
+            binding?.etTitle?.setText(mHappyPlaceDetails!!.title)
+            binding?.etDescription?.setText(mHappyPlaceDetails!!.description)
+            binding?.etDate?.setText(mHappyPlaceDetails!!.date)
+            binding?.etLocation?.setText(mHappyPlaceDetails!!.location)
+            mLatitude = mHappyPlaceDetails!!.latitude
+            mLongitude = mHappyPlaceDetails!!.longitude
+            saveImageToInternalStorage = Uri.parse(mHappyPlaceDetails!!.image)
+            binding?.ivImageUpload?.setImageURI(saveImageToInternalStorage)
+            binding?.btnSave?.text = "UPDATE"
+        }
 
         binding?.etDate?.setOnClickListener(this)
         binding?.tvAddImage?.setOnClickListener(this)
         binding?.btnSave?.setOnClickListener(this)
-
     }
 
     override fun onClick(v: View?){
