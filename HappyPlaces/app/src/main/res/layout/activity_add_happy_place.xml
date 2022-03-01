@@ -143,7 +143,7 @@
             <Button
                 android:id="@+id/btnSave"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:backgroundTint="@color/pink4"
                 android:layout_margin="10dp"
                 android:text="@string/save"
