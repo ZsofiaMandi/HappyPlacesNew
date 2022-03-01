@@ -1,6 +1,7 @@
 package zsofi.applications.happyplaces.activites
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
@@ -174,10 +175,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                         val addHappyPlace = dbHandler.addHappyPlace(happyPlaceModel)
 
                         if(addHappyPlace > 0){
-                            Toast.makeText(this,
-                                "The happy place details are inserted successfully",
-                                Toast.LENGTH_LONG).show()
-                            Log.e("DB", "DB updated successfully")
+                            setResult(Activity.RESULT_OK)
                             finish()
                         }
                     }
