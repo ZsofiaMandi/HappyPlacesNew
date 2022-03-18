@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import zsofi.applications.happyplaces.models.HappyPlaceModel
 
 //creating the database logic, extending the SQLiteOpenHelper base class
@@ -102,7 +103,18 @@ class DatabaseHandler(context: Context) :
         return success
     }
 
+    /**
+     * Function to delete a Happy Place from SQLite Database.
+     */
+    fun deleteHappyPlace(happyPlace: HappyPlaceModel): Int{
+        val db = this.writableDatabase
+        val success = db.delete(TABLE_HAPPY_PLACE,
+            KEY_ID + "=" + happyPlace.id,
+            null)
 
+        db.close() // Closing database connection
+        return success
+    }
 
     // START
     /**
@@ -143,5 +155,5 @@ class DatabaseHandler(context: Context) :
         }
         return happyPlaceList
     }
-    // END
+
 }

@@ -21,6 +21,10 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.lifecycleScope
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
@@ -38,6 +42,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
+import java.lang.Exception
 import java.util.*
 
 class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
@@ -50,7 +55,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
 
     private var mHappyPlaceDetails : HappyPlaceModel? = null
 
-    val openGalleryLauncher: ActivityResultLauncher<Intent> =
+    private val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
                 result ->
             if(result.resultCode == RESULT_OK && result.data!=null){
@@ -89,6 +94,17 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             }
         }
 
+    private val googleAPILauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+                result ->
+            if (result.resultCode == RESULT_OK && result.data!=null){
+                val place: Place = Autocomplete.getPlaceFromIntent(result.data!!)
+                binding?.etLocation?.setText(place.address)
+                mLatitude = place.latLng!!.latitude
+                mLongitude= place.latLng!!.longitude
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -106,6 +122,12 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             onBackPressed()
         }
 
+        if(!Places.isInitialized()){
+            Places.initialize(
+                this@AddHappyPlaceActivity,
+                resources.getString(R.string.google_maps_api_key))
+        }
+
         // Get extra details if it's editing
         if(intent.hasExtra(MainActivity.EXTRA_PLACE_DETAILS)){
             mHappyPlaceDetails = intent.getParcelableExtra(MainActivity.EXTRA_PLACE_DETAILS) as HappyPlaceModel?
@@ -113,7 +135,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
 
         setDefaultDate()
 
-        // We are editing is this is not null
+        // We are editing if this is not null
         if(mHappyPlaceDetails != null){
             supportActionBar?.title = "Edit Happy Place"
 
@@ -132,6 +154,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
         binding?.etDate?.setOnClickListener(this)
         binding?.tvAddImage?.setOnClickListener(this)
         binding?.btnSave?.setOnClickListener(this)
+        binding?.etLocation?.setOnClickListener(this)
     }
 
     override fun onClick(v: View?){
@@ -212,6 +235,21 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
 
                 }
 
+            }
+            R.id.etLocation ->{
+                try {
+                    // This is the list of fields which has to be passed
+                    val fields = listOf(
+                        Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS
+                    )
+                    // Start the autocomplete intent with a unique request code
+                    val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN,
+                        fields).build(this@AddHappyPlaceActivity)
+                    googleAPILauncher.launch(intent)
+
+                }catch (e:Exception){
+                    e.printStackTrace()
+                }
             }
         }
     }

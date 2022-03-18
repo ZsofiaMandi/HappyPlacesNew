@@ -1,6 +1,7 @@
 package zsofi.applications.happyplaces.adapters
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
@@ -9,18 +10,16 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.RecyclerView
 import zsofi.applications.happyplaces.activites.AddHappyPlaceActivity
 import zsofi.applications.happyplaces.activites.MainActivity
+import zsofi.applications.happyplaces.database.DatabaseHandler
 import zsofi.applications.happyplaces.databinding.ItemHappyPlaceBinding
 import zsofi.applications.happyplaces.models.HappyPlaceModel
 
 
 
-class HappyPlacesAdapter(private val happyPlaceList: List<HappyPlaceModel>)
+class HappyPlacesAdapter(private val happyPlaceList: ArrayList<HappyPlaceModel>)
     : RecyclerView.Adapter<HappyPlacesAdapter.MainViewHolder>() {
 
     private var onClickListener: OnCLickListener? = null
-
-
-
 
    inner class  MainViewHolder(private val itemBinding: ItemHappyPlaceBinding)
        : RecyclerView.ViewHolder(itemBinding.root){
@@ -72,5 +71,13 @@ class HappyPlacesAdapter(private val happyPlaceList: List<HappyPlaceModel>)
         notifyItemChanged(position)
     }
 
+    fun removeAt(context: Context, position: Int){
+        val dbHandler = DatabaseHandler(context)
+        val isDelete = dbHandler.deleteHappyPlace(happyPlaceList[position])
+        if (isDelete > 0){
+            happyPlaceList.removeAt(position)
+            notifyItemRemoved(position)
+        }
+    }
 
 }
