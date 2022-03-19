@@ -45,6 +45,7 @@ import zsofi.applications.happyplaces.R
 import zsofi.applications.happyplaces.database.DatabaseHandler
 import zsofi.applications.happyplaces.databinding.ActivityAddHappyPlaceBinding
 import zsofi.applications.happyplaces.models.HappyPlaceModel
+import zsofi.applications.happyplaces.utils.GetAddressFromLatLng
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -117,8 +118,18 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             val mLastLocation: Location = locationResult.lastLocation
             mLatitude = mLastLocation.latitude
             mLongitude = mLastLocation.longitude
-            Log.i("Current Latitude", "$mLatitude")
-            Log.i("Current Longitude", "$mLongitude")
+
+            val addressTask = GetAddressFromLatLng(
+                this@AddHappyPlaceActivity, mLatitude, mLongitude)
+            addressTask.setAddressListener(object: GetAddressFromLatLng.AddressListener{
+                override fun onAddressFound(address: String?){
+                    binding?.etLocation?.setText(address)
+                }
+                override fun onError(){
+                    Log.e("Get Address:: ", "Something went wrong")
+                }
+            })
+            addressTask.getAddress()
         }
     }
 
@@ -432,7 +443,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
 
     @SuppressLint("MissingPermission")
     private fun requestNewLocationData(){
-        var mLocationRequest = LocationRequest.create().apply {
+        val mLocationRequest = LocationRequest.create().apply {
             interval = 100
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
             numUpdates = 1
