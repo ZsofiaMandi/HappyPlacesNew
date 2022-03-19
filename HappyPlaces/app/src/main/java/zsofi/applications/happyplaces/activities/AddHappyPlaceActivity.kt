@@ -1,4 +1,4 @@
-package zsofi.applications.happyplaces.activites
+package zsofi.applications.happyplaces.activities
 
 import android.Manifest
 import android.app.Activity
@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
+import android.location.LocationManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -26,10 +27,12 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.karumi.dexter.Dexter
+import com.karumi.dexter.MultiplePermissionsReport
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
 import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import com.karumi.dexter.listener.single.PermissionListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -69,8 +72,6 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                         saveImageToInternalStorage = saveImageToInternalStorage(bitmap)
                         Log.e("Saved image: ", "Path :: $saveImageToInternalStorage")
                     }
-
-                    // TODO to check why did the border from the image disappear
                 }catch (e: IOException){
                     e.printStackTrace()
                     Toast.makeText(this@AddHappyPlaceActivity,
@@ -155,6 +156,7 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
         binding?.tvAddImage?.setOnClickListener(this)
         binding?.btnSave?.setOnClickListener(this)
         binding?.etLocation?.setOnClickListener(this)
+        binding?.btnSelectCurrentLocation?.setOnClickListener(this)
     }
 
     override fun onClick(v: View?){
@@ -251,6 +253,13 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                     e.printStackTrace()
                 }
             }
+            R.id.btnSelectCurrentLocation ->{
+                if(!isLocationEnabled()){
+                    showRationalDialogForLocation()
+                }else{
+                    getCurrentLocation()
+                }
+            }
         }
     }
 
@@ -326,8 +335,32 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
         }).check()
     }
 
+    private fun getCurrentLocation(){
+        Dexter.withContext(this).withPermissions(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ).withListener(object: MultiplePermissionsListener{
+            override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
+                if(report!!.areAllPermissionsGranted()){
+                    Toast.makeText(this@AddHappyPlaceActivity,
+                        "Location permission is granted. Now you can get the current location",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }else{
+                    showRationalDialogForPermissions()
+                }
+            }
+            override fun onPermissionRationaleShouldBeShown(
+                permissions: MutableList<PermissionRequest>?,
+                token: PermissionToken?
+            ) {
+                showRationalDialogForPermissions()
+            }
+        }).check()
+    }
+
     private fun showRationalDialogForPermissions(){
-        AlertDialog.Builder(this, R.style.myDialogTheme).setMessage("It looks like you have turned off permission" +
+        AlertDialog.Builder(this, R.style.myDialogTheme).setMessage("It looks like you have turned off the permission" +
                 " required for this feature. It can be enabled under the Applications Settings")
             .setPositiveButton("GO TO SETTINGS"){
                 _, _ ->
@@ -335,6 +368,23 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                     val uri = Uri.fromParts("package", packageName, null)
                     intent.data = uri
+                    startActivity(intent)
+                } catch(e: ActivityNotFoundException){
+                    e.printStackTrace()
+                }
+
+            }.setNegativeButton("Cancel"){dialog, _ ->
+                dialog.dismiss()
+            }.show()
+    }
+
+    private fun showRationalDialogForLocation(){
+        AlertDialog.Builder(this, R.style.myDialogTheme).setMessage(
+            "It looks like you have turned off your location provider. Please turn it on.")
+            .setPositiveButton("GO TO SETTINGS"){
+                    _, _ ->
+                try{
+                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                     startActivity(intent)
                 } catch(e: ActivityNotFoundException){
                     e.printStackTrace()
@@ -363,6 +413,13 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             }
         }
         return Uri.parse(file.absolutePath)
+    }
+
+    private fun isLocationEnabled(): Boolean{
+        val locationManager: LocationManager =
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
     companion object {

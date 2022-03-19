@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activites.AddHappyPlaceActivity">
+    tools:context=".activities.AddHappyPlaceActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar_add_place"
@@ -106,6 +106,17 @@
                     android:textSize="16sp"
                     />
             </com.google.android.material.textfield.TextInputLayout>
+
+           <Button
+                android:id="@+id/btnSelectCurrentLocation"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/pink3"
+                android:layout_margin="10dp"
+                android:text="@string/btn_select_current_location_text"
+                android:textSize="16sp"
+                />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"

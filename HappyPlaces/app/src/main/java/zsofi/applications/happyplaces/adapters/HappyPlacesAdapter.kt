@@ -8,8 +8,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.RecyclerView
-import zsofi.applications.happyplaces.activites.AddHappyPlaceActivity
-import zsofi.applications.happyplaces.activites.MainActivity
+import zsofi.applications.happyplaces.activities.AddHappyPlaceActivity
+import zsofi.applications.happyplaces.activities.MainActivity
 import zsofi.applications.happyplaces.database.DatabaseHandler
 import zsofi.applications.happyplaces.databinding.ItemHappyPlaceBinding
 import zsofi.applications.happyplaces.models.HappyPlaceModel

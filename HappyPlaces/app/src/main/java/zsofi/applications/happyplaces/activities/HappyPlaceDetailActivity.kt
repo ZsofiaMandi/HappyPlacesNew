@@ -1,11 +1,9 @@
-package zsofi.applications.happyplaces.activites
+package zsofi.applications.happyplaces.activities
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.activity.result.contract.ActivityResultContracts
 import zsofi.applications.happyplaces.databinding.ActivityHappyPlaceDetailBinding
 import zsofi.applications.happyplaces.models.HappyPlaceModel
 
