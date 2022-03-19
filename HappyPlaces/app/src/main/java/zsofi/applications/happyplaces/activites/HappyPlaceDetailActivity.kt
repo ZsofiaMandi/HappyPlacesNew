@@ -37,6 +37,12 @@ class HappyPlaceDetailActivity : AppCompatActivity() {
             binding?.ivPlaceImage?.setImageURI(Uri.parse(happyPlaceDetailModel.image))
             binding?.tvDescription?.text = happyPlaceDetailModel.description
             binding?.tvLocation?.text = happyPlaceDetailModel.location
+
+            binding?.btnViewOnMap?.setOnClickListener {
+                val intent = Intent(this, MapActivity::class.java)
+                intent.putExtra(MainActivity.EXTRA_PLACE_DETAILS, happyPlaceDetailModel)
+                startActivity(intent)
+            }
         }
 
     }
