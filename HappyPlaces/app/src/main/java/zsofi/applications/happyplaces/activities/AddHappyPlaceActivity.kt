@@ -1,6 +1,7 @@
 package zsofi.applications.happyplaces.activities
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
@@ -9,10 +10,12 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
+import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
@@ -22,6 +25,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
@@ -50,13 +54,15 @@ import java.util.*
 
 class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
 
-    private var binding: ActivityAddHappyPlaceBinding? = null
+    private var binding : ActivityAddHappyPlaceBinding? = null
     private var savedDate : IntArray = intArrayOf(0, 0, 0)
     private var saveImageToInternalStorage : Uri? = null
     private var mLatitude : Double = 0.0
     private var mLongitude : Double = 0.0
 
     private var mHappyPlaceDetails : HappyPlaceModel? = null
+
+    private lateinit var mFusedLocationClient : FusedLocationProviderClient
 
     private val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -106,11 +112,23 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             }
         }
 
+    private val mLocationCallBack = object : LocationCallback(){
+        override fun onLocationResult(locationResult: LocationResult) {
+            val mLastLocation: Location = locationResult.lastLocation
+            mLatitude = mLastLocation.latitude
+            mLongitude = mLastLocation.longitude
+            Log.i("Current Latitude", "$mLatitude")
+            Log.i("Current Longitude", "$mLongitude")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityAddHappyPlaceBinding.inflate(layoutInflater)
         setContentView(binding?.root)
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         setSupportActionBar(binding?.toolbarAddPlace)
 
@@ -288,9 +306,9 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
 
     private fun setDefaultDate(){
         val myCalendar = Calendar.getInstance()
-        var year = myCalendar.get(Calendar.YEAR)
-        var month = myCalendar.get(Calendar.MONTH)
-        var day = myCalendar.get(Calendar.DAY_OF_MONTH)
+        val year = myCalendar.get(Calendar.YEAR)
+        val month = myCalendar.get(Calendar.MONTH)
+        val day = myCalendar.get(Calendar.DAY_OF_MONTH)
         val defaultDate = "$day/${month + 1}/$year"
         binding?.etDate?.setText(defaultDate)
     }
@@ -330,30 +348,6 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
                     "Camera permission is denied, you cannot take photo.", Toast.LENGTH_SHORT).show()
             }
             override fun onPermissionRationaleShouldBeShown(permission: PermissionRequest, token: PermissionToken) {
-                showRationalDialogForPermissions()
-            }
-        }).check()
-    }
-
-    private fun getCurrentLocation(){
-        Dexter.withContext(this).withPermissions(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ).withListener(object: MultiplePermissionsListener{
-            override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
-                if(report!!.areAllPermissionsGranted()){
-                    Toast.makeText(this@AddHappyPlaceActivity,
-                        "Location permission is granted. Now you can get the current location",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }else{
-                    showRationalDialogForPermissions()
-                }
-            }
-            override fun onPermissionRationaleShouldBeShown(
-                permissions: MutableList<PermissionRequest>?,
-                token: PermissionToken?
-            ) {
                 showRationalDialogForPermissions()
             }
         }).check()
@@ -413,6 +407,38 @@ class AddHappyPlaceActivity : AppCompatActivity(),View.OnClickListener {
             }
         }
         return Uri.parse(file.absolutePath)
+    }
+
+    private fun getCurrentLocation(){
+        Dexter.withContext(this).withPermissions(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ).withListener(object: MultiplePermissionsListener{
+            override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
+                if(report!!.areAllPermissionsGranted()){
+                    requestNewLocationData()
+                }else{
+                    showRationalDialogForPermissions()
+                }
+            }
+            override fun onPermissionRationaleShouldBeShown(
+                permissions: MutableList<PermissionRequest>?,
+                token: PermissionToken?
+            ) {
+                showRationalDialogForPermissions()
+            }
+        }).check()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun requestNewLocationData(){
+        var mLocationRequest = LocationRequest.create().apply {
+            interval = 100
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            numUpdates = 1
+        }
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+            mLocationCallBack, Looper.myLooper()!!)
     }
 
     private fun isLocationEnabled(): Boolean{
